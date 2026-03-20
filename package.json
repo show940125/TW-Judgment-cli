@@ -1,0 +1,28 @@
+{
+  "name": "tw-judgment-cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Taiwan Judicial judgments extension pack for opencli with a Codex skill.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "node -e \"import('node:fs/promises').then(fs=>fs.rm('dist',{recursive:true,force:true}))\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "install:opencli": "node scripts/install.mjs",
+    "install:skill": "node scripts/install-skill.mjs",
+    "sync:opencli": "node scripts/install.mjs --sync",
+    "doctor": "node scripts/doctor.mjs",
+    "verify": "node scripts/verify.mjs",
+    "release:bundle": "node scripts/release.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  }
+}

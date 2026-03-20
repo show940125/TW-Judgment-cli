@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        opencli-version: ['1.0.0', '1.0.1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install
+      - run: npm run build
+      - run: npm install -g @jackwener/opencli@${{ matrix.opencli-version }}
+      - run: npm run install:opencli
+      - run: npm run doctor
+      - run: npm run verify
