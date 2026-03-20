@@ -1,0 +1,13 @@
+TW-Judgment-cli
+
+This project is an extension pack built on top of opencli.
+
+Upstream project:
+- Name: opencli
+- Repository: https://github.com/jackwener/opencli
+- Package: @jackwener/opencli
+- Verified local version during development: 1.0.1
+- Upstream license: Apache-2.0
+
+TW-Judgment-cli does not claim to replace the opencli runtime.
+Compatibility with opencli is explicitly version-bounded and verified through this repository's compatibility matrix, doctor checks, and smoke tests.
