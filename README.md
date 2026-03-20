@@ -4,9 +4,9 @@
 
 ## 上游依賴與授權
 
-本專案是建立在 [opencli](https://github.com/jackwener/opencli) 之上的 extension pack，而不是獨立重做一套 runtime。依我目前機器上安裝的 `@jackwener/opencli 1.0.1` 實查，其授權是 **Apache-2.0**，不是 MIT。
+本專案是建立在 [opencli](https://github.com/jackwener/opencli) 之上的 extension pack，而不是獨立重做一套 runtime。開發與驗證所使用的 `@jackwener/opencli 1.0.1` 授權為 **Apache-2.0**。
 
-因此，公開 repo 時至少應明確寫出：
+公開散布時，文件應明確載明：
 
 - 本專案依賴 `opencli` 作為執行層
 - 上游專案：`jackwener/opencli`
@@ -15,7 +15,7 @@
 
 本 repo 自身目前也採用 **Apache-2.0**，見 [LICENSE](./LICENSE)。
 
-如果未來發佈壓縮包、安裝器，或把上游程式碼直接一起再散布，還應一併保留上游授權與 notice。簡單說：**要註明，而且應該主動註明，不要等別人來問。**
+若未來發佈壓縮包、安裝器，或將上游程式碼一併再散布，應同時保留上游授權與 notice。
 
 ## 為什麼不用瀏覽器點擊
 
