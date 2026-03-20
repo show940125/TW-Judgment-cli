@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<body>
+  <form method="post" action="./Default_AD.aspx" id="form1">
+    <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="ADV_VIEWSTATE" />
+    <input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="ADV_GENERATOR" />
+    <input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="ADV_EVENT" />
+    <select multiple="multiple" name="jud_court" id="jud_court">
+      <option value="" selected="selected">所有法院</option>
+      <option value="TPS">最高法院</option>
+      <option value="TPH">臺灣高等法院</option>
+      <option value="CYD">臺灣嘉義地方法院</option>
+      <option value="TND">臺灣臺南地方法院</option>
+    </select>
+    <input name="jud_sys" type="checkbox" value="V" />
+    <input name="jud_sys" type="checkbox" value="M" />
+    <input id="jud_year" name="jud_year" />
+    <input id="jud_case" name="jud_case" />
+    <input id="jud_no" name="jud_no" />
+    <input id="jud_no_end" name="jud_no_end" />
+    <input id="dy1" name="dy1" />
+    <input id="dm1" name="dm1" />
+    <input id="dd1" name="dd1" />
+    <input id="dy2" name="dy2" />
+    <input id="dm2" name="dm2" />
+    <input id="dd2" name="dd2" />
+    <input id="jud_title" name="jud_title" />
+    <input id="jud_jmain" name="jud_jmain" />
+    <input id="jud_kw" name="jud_kw" />
+    <input id="KbStart" name="KbStart" />
+    <input id="KbEnd" name="KbEnd" />
+    <input type="hidden" name="judtype" id="judtype" value="JUDBOOK" />
+    <input type="hidden" name="whosub" id="whosub" value="1" />
+    <select name="sel_judword" id="sel_judword">
+      <option value="">常用字別</option>
+    </select>
+    <input type="submit" name="ctl00$cp_content$btnQry" value="送出查詢" id="btnQry" />
+  </form>
+</body>
+</html>

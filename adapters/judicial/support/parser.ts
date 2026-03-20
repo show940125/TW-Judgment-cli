@@ -71,11 +71,6 @@ export function extractResultListPath(html: string): string {
 }
 
 export function parseResultListHtml(html: string, currentUrl: string): SearchPage {
-  const pageMatch = html.match(/共\s*(\d+)\s*筆\s*\.\s*現在第\s*(\d+)\s*\/\s*(\d+)\s*頁/);
-  if (!pageMatch) {
-    throw new Error('PARSE_ERROR: missing pagination');
-  }
-
   const items: SearchResultItem[] = [];
   const rowBlocks = [...html.matchAll(/<tr>\s*<td[^>]*>(\d+)\.<\/td>([\s\S]*?)<\/tr>\s*<tr class="summary">([\s\S]*?)<\/tr>/gi)];
 
@@ -105,13 +100,20 @@ export function parseResultListHtml(html: string, currentUrl: string): SearchPag
     });
   }
 
+  if (items.length === 0) {
+    throw new Error('PARSE_ERROR: missing result rows');
+  }
+
+  const pageMatch = html.match(/共\s*(\d+)\s*筆\s*\.\s*現在第\s*(\d+)\s*\/\s*(\d+)\s*頁/);
   const nextMatch = html.match(/id="hlNext"[^>]*href="([^"]+)"/i);
+  const parsedCurrentUrl = new URL(currentUrl);
+  const currentPage = Number(parsedCurrentUrl.searchParams.get('page') || '1');
 
   return {
     items,
-    totalCount: Number(pageMatch[1]),
-    page: Number(pageMatch[2]),
-    totalPages: Number(pageMatch[3]),
+    totalCount: pageMatch ? Number(pageMatch[1]) : items.length,
+    page: pageMatch ? Number(pageMatch[2]) : currentPage,
+    totalPages: pageMatch ? Number(pageMatch[3]) : 1,
     nextPageUrl: nextMatch ? absolutize(decodeHtml(nextMatch[1])) : null,
   };
 }

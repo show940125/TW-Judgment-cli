@@ -24,6 +24,16 @@ describe('judicial parser', () => {
     });
   });
 
+  test('parses ASP.NET hidden fields from advanced search page', () => {
+    const payload = parseViewStatePayload(fixture('advanced-page.html'));
+
+    expect(payload).toEqual({
+      __VIEWSTATE: 'ADV_VIEWSTATE',
+      __VIEWSTATEGENERATOR: 'ADV_GENERATOR',
+      __EVENTVALIDATION: 'ADV_EVENT',
+    });
+  });
+
   test('extracts the result list path with q token', () => {
     const path = extractResultListPath(fixture('search-entry.html'));
 
@@ -54,6 +64,19 @@ describe('judicial parser', () => {
     expect(result.nextPageUrl).toBe(
       'https://judgment.judicial.gov.tw/FJUD/qryresultlst.aspx?q=70829f2ea883f3e5e9affd3bd8be8e88&sort=DS&page=3'
     );
+  });
+
+  test('falls back to a single-page result list when pagination text is absent', () => {
+    const result = parseResultListHtml(
+      fixture('result-list-single-page.html'),
+      'https://judgment.judicial.gov.tw/FJUD/qryresultlst.aspx?q=singlepage&sort=DS&page=1'
+    );
+
+    expect(result.page).toBe(1);
+    expect(result.totalPages).toBe(1);
+    expect(result.totalCount).toBe(1);
+    expect(result.nextPageUrl).toBeNull();
+    expect(result.items[0]?.id).toBe('CYDM,115,金訴,204,20260319,1');
   });
 
   test('parses detail page text and export links', () => {

@@ -30,10 +30,14 @@ function hintForCode(code: string): string {
       return 'The Judicial Yuan site may be under maintenance. Wait and retry.';
     case 'UPSTREAM_CHANGED':
       return 'The upstream HTML or route shape changed. Update the parser or verify the site manually.';
+    case 'UPSTREAM_RETRYABLE':
+      return 'The Judicial Yuan site returned a temporary server error. Retry the command.';
     case 'ADAPTER_NOT_INSTALLED':
       return 'Run the install script to sync the judicial adapters into ~/.opencli/clis/judicial.';
     case 'UNSUPPORTED_OPENCLI_VERSION':
       return 'Install a supported opencli version, then rerun doctor and verify.';
+    case 'INVALID_ARGUMENT':
+      return 'Check the filter values, CSV lists, dates, and file paths, then rerun the command.';
     default:
       return 'Check the command arguments and rerun with verification if needed.';
   }

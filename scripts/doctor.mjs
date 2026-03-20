@@ -28,11 +28,19 @@ async function main() {
   try {
     const { stdout } = await runOpencli(['list', '-f', 'json']);
     const commands = JSON.parse(stdout);
-    discovered = Array.isArray(commands) && commands.some((row) => row.command === 'judicial/search');
+    const requiredCommands = new Set([
+      'judicial/search',
+      'judicial/advanced-search',
+      'judicial/read-batch',
+      'judicial/export-results',
+    ]);
+    discovered = Array.isArray(commands) && [...requiredCommands].every((command) =>
+      commands.some((row) => row.command === command)
+    );
   } catch {
     discovered = false;
   }
-  checks.push(['opencli discovery', discovered, 'judicial/search']);
+  checks.push(['opencli discovery', discovered, 'judicial/search + advanced-search + read-batch + export-results']);
 
   let failed = false;
   for (const [label, ok, detail] of checks) {

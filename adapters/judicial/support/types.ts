@@ -4,6 +4,27 @@ export interface ViewStatePayload {
   __EVENTVALIDATION: string;
 }
 
+export type SearchSort = 'DS' | 'DB' | 'LG' | 'LB' | 'KG' | 'KB';
+
+export type CourtLevel = 'constitutional' | 'supreme' | 'high' | 'district' | 'special';
+
+export type CourtRegion = 'north' | 'central' | 'south' | 'east' | 'outlying' | 'national';
+
+export interface CourtRecord {
+  code: string;
+  officialName: string;
+  aliases: string[];
+  level: CourtLevel;
+  region: CourtRegion;
+  supportsCaseTypes: string[];
+}
+
+export interface DateParts {
+  year: string;
+  month: string;
+  day: string;
+}
+
 export interface SearchResultItem {
   rank: number;
   id: string;
@@ -27,12 +48,37 @@ export interface SearchPage {
 export interface SearchParams {
   query: string;
   page?: number;
-  sort?: 'DS' | 'DB' | 'LG' | 'LB' | 'KG' | 'KB';
+  sort?: SearchSort;
+  limit?: number;
+}
+
+export interface AdvancedSearchParams {
+  courts?: string;
+  courtLevels?: string;
+  regions?: string;
+  caseTypes?: string;
+  caseYear?: string;
+  caseWord?: string;
+  caseNumber?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  cause?: string;
+  holding?: string;
+  fulltext?: string;
+  sizeMinKb?: number;
+  sizeMaxKb?: number;
+  page?: number;
+  sort?: SearchSort;
   limit?: number;
 }
 
 export interface ReadParams {
   id: string;
+}
+
+export interface ReadBatchParams {
+  ids: string[];
+  concurrency?: number;
 }
 
 export interface ReadResult {
@@ -50,4 +96,13 @@ export interface PdfResult {
   title: string;
   pdfUrl: string;
   detailUrl: string;
+}
+
+export type ExportFormat = 'csv' | 'md';
+
+export interface ExportResult {
+  format: ExportFormat;
+  inputPath: string;
+  outputPath: string;
+  recordCount: number;
 }
