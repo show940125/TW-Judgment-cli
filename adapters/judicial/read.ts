@@ -22,6 +22,8 @@ cli({
         date: result.date,
         cause: result.cause,
         text: result.text,
+        has_text_layer: result.hasTextLayer,
+        scan_only: result.scanOnly,
         pdf_url: result.pdfUrl,
         print_url: result.printUrl,
       };

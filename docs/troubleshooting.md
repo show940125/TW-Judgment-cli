@@ -5,7 +5,7 @@
 - 安裝支援版本：
 
 ```powershell
-npm install -g @jackwener/opencli@1.0.1
+npm install -g @jackwener/opencli@1.5.6
 ```
 
 ## `opencli` 找不到 `judicial/search`

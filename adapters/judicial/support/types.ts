@@ -32,7 +32,8 @@ export interface SearchResultItem {
   date: string;
   cause: string;
   summary: string;
-  sizeKb: number | null;
+  sizeKb: number;
+  scanOnly: boolean;
   detailUrl: string;
   pdfUrl: string;
 }
@@ -87,8 +88,10 @@ export interface ReadResult {
   date: string;
   cause: string;
   text: string;
+  hasTextLayer: boolean;
+  scanOnly: boolean;
   pdfUrl: string;
-  printUrl: string;
+  printUrl: string | null;
 }
 
 export interface PdfResult {

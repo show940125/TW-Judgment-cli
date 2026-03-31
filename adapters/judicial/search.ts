@@ -32,6 +32,7 @@ cli({
         size_kb: item.sizeKb,
         id: item.id,
         summary: item.summary,
+        scan_only: item.scanOnly,
         detail_url: item.detailUrl,
         pdf_url: item.pdfUrl,
       }));

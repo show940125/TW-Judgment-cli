@@ -40,6 +40,20 @@ describe('judicial parser', () => {
     expect(path).toBe('/FJUD/qryresultlst.aspx?ty=JUDBOOK&q=70829f2ea883f3e5e9affd3bd8be8e88');
   });
 
+  test('returns null when no-result iframe is embedded', () => {
+    const html = `
+      <html>
+        <body>
+          <form method="post" action="qryresult.aspx" id="form1">
+            <iframe src="../ErrorPage.aspx?frm=iframe&amp;err=Q003"></iframe>
+          </form>
+        </body>
+      </html>
+    `;
+
+    expect(extractResultListPath(html)).toBeNull();
+  });
+
   test('parses list rows, pagination, and pdf metadata', () => {
     const result = parseResultListHtml(
       fixture('result-list.html'),
@@ -95,5 +109,147 @@ describe('judicial parser', () => {
     });
     expect(result.text).toContain('臺灣臺北地方法院民事判決');
     expect(result.text).toContain('被告應給付原告新臺幣參佰捌拾肆萬貳仟肆佰零柒元');
+  });
+
+  test('parses legacy 5-part ids and export pdf urls', () => {
+    const html = `
+      <table>
+        <tr>
+          <td>1.</td>
+          <td><a id="hlTitle" href="data.aspx?ty=JD&amp;id=TPSV%2c103%2c%e5%8f%b0%e4%b8%8a%2c880%2c20140508&amp;ot=in">最高法院 103 年度 台上 字第 880 號民事判決</a>（10K）</td>
+          <td>103.05.08</td>
+          <td width="30%">回復繼承權等</td>
+        </tr>
+        <tr class="summary">
+          <td colspan="4">舊制最高法院民事判決結果列。</td>
+        </tr>
+      </table>
+    `;
+
+    const result = parseResultListHtml(
+      html,
+      'https://judgment.judicial.gov.tw/FJUD/qryresultlst.aspx?ty=JUDBOOK&q=demo&sort=DS&page=1'
+    );
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
+      id: 'TPSV,103,台上,880,20140508',
+      sizeKb: 10,
+      scanOnly: false,
+    });
+    expect(result.items[0]?.pdfUrl).toContain('ExportToPdf.aspx?type=JD&id=TPSV');
+  });
+
+  test('supports legacy scan-only rows without size marker', () => {
+    const html = `
+      <table>
+        <tr>
+          <td>1.</td>
+          <td><a id="hlTitle" href="data.aspx?ty=JD&amp;id=TPSV%2c55%2c%e5%8f%b0%e4%b8%8a%2c228%2c19660204%2c1&amp;ot=in">最高法院 55 年度 台上 字第 228 號民事判決</a></td>
+          <td>55.02.04</td>
+          <td width="30%">請求返還豬鬃</td>
+        </tr>
+        <tr class="summary">
+          <td colspan="4">全文為掃描檔</td>
+        </tr>
+      </table>
+    `;
+
+    const result = parseResultListHtml(
+      html,
+      'https://judgment.judicial.gov.tw/FJUD/qryresultlst.aspx?ty=JUDBOOK&q=demo&sort=DS&page=1'
+    );
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
+      id: 'TPSV,55,台上,228,19660204,1',
+      sizeKb: 0,
+      scanOnly: true,
+    });
+  });
+
+  test('skips masked rows without detail href', () => {
+    const html = `
+      <table>
+        <tr>
+          <td>1.</td>
+          <td><a id="hlTitle" class="hlTitle_scroll">最高法院 103 年度 台上 字第 2253 號民事判決</a>（9K）</td>
+          <td>103.10.30</td>
+          <td width="30%">請求分配剩餘財產差額等</td>
+        </tr>
+        <tr class="summary">
+          <td colspan="4">【103台上2253】本件經程式判定為依法不得公開。</td>
+        </tr>
+        <tr>
+          <td>2.</td>
+          <td><a id="hlTitle" href="data.aspx?ty=JD&amp;id=TPSV%2c103%2c%e5%8f%b0%e4%b8%8a%2c2253%2c20141030%2c1&amp;ot=in">最高法院 103 年度 台上 字第 2253 號民事判決</a>（9K）</td>
+          <td>103.10.30</td>
+          <td width="30%">請求分配剩餘財產差額等</td>
+        </tr>
+        <tr class="summary">
+          <td colspan="4">上列當事人間請求分配剩餘財產差額等事件。</td>
+        </tr>
+      </table>
+    `;
+
+    const result = parseResultListHtml(
+      html,
+      'https://judgment.judicial.gov.tw/FJUD/qryresultlst.aspx?ty=JUDBOOK&q=demo&sort=DS&page=1'
+    );
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
+      rank: 2,
+      id: 'TPSV,103,台上,2253,20141030,1',
+    });
+  });
+
+  test('tolerates missing print href and empty text layer on legacy detail pages', () => {
+    const html = `
+      <html>
+        <head><title>最高法院 103 年度台上字第 880 號民事判決</title></head>
+        <body>
+          <div class="col-th">裁判日期：</div><div class="col-td">103.05.08</div>
+          <div class="col-th">裁判案由：</div><div class="col-td">回復繼承權等</div>
+          <a id="hlPrint" class="btn btn-default btn-xs btn-print" title="友善列印" target="_blank">友善列印</a>
+          <a id="hlExportPDF" href="/EXPORTFILE/ExportToPdf.aspx?type=JD&amp;id=TPSV%2c103%2c%e5%8f%b0%e4%b8%8a%2c880%2c20140508">轉存PDF</a>
+          <div class="htmlcontent">判決全文</div></div></div>
+        </body>
+      </html>
+    `;
+
+    const result = parseDetailHtml(
+      html,
+      'https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPSV%2c103%2c%e5%8f%b0%e4%b8%8a%2c880%2c20140508&ot=in'
+    );
+
+    expect(result.printUrl).toBeNull();
+    expect(result.hasTextLayer).toBe(true);
+    expect(result.scanOnly).toBe(false);
+    expect(result.pdfUrl).toContain('ExportToPdf.aspx?type=JD&id=TPSV');
+  });
+
+  test('falls back to derived pdf url on scan-only detail pages', () => {
+    const html = `
+      <html>
+        <head><title>最高法院 55 年度台上字第 228 號民事判決</title></head>
+        <body>
+          <div class="col-th">裁判日期：</div><div class="col-td">民國 55 年 02 月 04 日</div>
+          <div class="col-th">裁判案由：</div><div class="col-td">請求返還豬鬃</div>
+          <a id="hlPrint" class="btn btn-default btn-xs btn-print" title="友善列印" target="_blank">友善列印</a>
+        </body>
+      </html>
+    `;
+
+    const result = parseDetailHtml(
+      html,
+      'https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPSV%2c55%2c%e5%8f%b0%e4%b8%8a%2c228%2c19660204%2c1&ot=in'
+    );
+
+    expect(result.text).toBe('');
+    expect(result.hasTextLayer).toBe(false);
+    expect(result.scanOnly).toBe(true);
+    expect(result.printUrl).toBeNull();
+    expect(result.pdfUrl).toContain('/FILES/TPSV/');
   });
 });

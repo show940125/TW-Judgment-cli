@@ -6,7 +6,7 @@ Upstream project:
 - Name: opencli
 - Repository: https://github.com/jackwener/opencli
 - Package: @jackwener/opencli
-- Verified local version during development: 1.0.1
+- Verified local version during development: 1.5.6
 - Upstream license: Apache-2.0
 
 TW-Judgment-cli does not claim to replace the opencli runtime.

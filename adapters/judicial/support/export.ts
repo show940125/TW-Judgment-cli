@@ -10,6 +10,7 @@ type SearchLikeRecord = SearchResultItem | {
   date: string;
   cause: string;
   summary: string;
+  scan_only?: boolean;
   size_kb?: number | null;
   detail_url: string;
   pdf_url: string;
@@ -21,8 +22,10 @@ type ReadLikeRecord = ReadResult | {
   date: string;
   cause: string;
   text: string;
+  has_text_layer?: boolean;
+  scan_only?: boolean;
   pdf_url: string;
-  print_url: string;
+  print_url: string | null;
 };
 
 type ExportableRecord = SearchLikeRecord | ReadLikeRecord;
@@ -49,7 +52,8 @@ function normalizeSearchItem(item: SearchLikeRecord): SearchResultItem {
     date: item.date,
     cause: item.cause,
     summary: item.summary,
-    sizeKb: 'sizeKb' in item ? item.sizeKb : (item.size_kb ?? null),
+    sizeKb: 'sizeKb' in item ? item.sizeKb : (item.size_kb ?? 0),
+    scanOnly: 'scanOnly' in item ? item.scanOnly : Boolean(item.scan_only),
     detailUrl: 'detailUrl' in item ? item.detailUrl : item.detail_url,
     pdfUrl: 'pdfUrl' in item ? item.pdfUrl : item.pdf_url,
   };
@@ -62,6 +66,8 @@ function normalizeReadItem(item: ReadLikeRecord): ReadResult {
     date: item.date,
     cause: item.cause,
     text: item.text,
+    hasTextLayer: 'hasTextLayer' in item ? item.hasTextLayer : Boolean(item.has_text_layer ?? item.text),
+    scanOnly: 'scanOnly' in item ? item.scanOnly : Boolean(item.scan_only),
     pdfUrl: 'pdfUrl' in item ? item.pdfUrl : item.pdf_url,
     printUrl: 'printUrl' in item ? item.printUrl : item.print_url,
   };

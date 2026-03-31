@@ -1,10 +1,10 @@
 # TW-Judgment-cli
 
-`TW-Judgment-cli` 是一個以 `opencli` 為 runtime 的 extension pack，專門把司法院裁判書查詢系統包成可在終端與 Codex 中直接操作的命令。
+`TW-Judgment-cli` 2.0 是一個以 `opencli` 為 runtime 的 extension pack，專門把司法院裁判書查詢系統包成可在終端與 Codex 中直接操作的命令。
 
 ## 上游依賴與授權
 
-本專案是建立在 [opencli](https://github.com/jackwener/opencli) 之上的 extension pack，而不是獨立重做一套 runtime。開發與驗證所使用的 `@jackwener/opencli 1.0.1` 授權為 **Apache-2.0**。
+本專案是建立在 [opencli](https://github.com/jackwener/opencli) 之上的 extension pack，而不是獨立重做一套 runtime。這一版實機驗證使用的 `@jackwener/opencli 1.5.6` 授權為 **Apache-2.0**。
 
 公開散布時，文件應明確載明：
 
@@ -44,7 +44,7 @@ V2 目前聚焦七個命令：
 1. 安裝支援版本的 `opencli`
 
 ```powershell
-npm install -g @jackwener/opencli@1.0.1
+npm install -g @jackwener/opencli@1.5.6
 ```
 
 2. 安裝此 repo 的依賴並建置
@@ -132,6 +132,14 @@ opencli judicial export-results --input ".\\reads.json" --export-format md
 - `docs/`: 相容政策、故障排查、法律與倫理說明
 - `examples/`: 命令範例與示意輸出
 - `skill/`: Codex skill
+
+## 2.0 版重點
+
+- 補回舊最高法院 5 段式 id 的解析與 PDF 路徑
+- 可辨識 scan-only 結果列與 detail 頁是否有文字層
+- 無結果時回 `NOT_FOUND`，不再亂冒成 parser error
+- 搜尋結果遇到遮罩列或假列時，會跳過無 href 的列
+- `search / advanced-search / read` 都會帶出與 scan-only 相關的診斷欄位
 
 ## 限制
 

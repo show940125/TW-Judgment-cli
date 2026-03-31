@@ -72,6 +72,9 @@ export async function searchJudgments(params: SearchParams): Promise<SearchPage>
   ensurePageLooksValid(searchHtml);
 
   const resultPath = extractResultListPath(searchHtml);
+  if (!resultPath) {
+    throw createJudgmentError('NOT_FOUND', `no judgments found for query "${query}"`);
+  }
   const resultUrl = new URL(resultPath, BASE_URL);
   resultUrl.searchParams.set('sort', sort);
   resultUrl.searchParams.set('page', String(page));
@@ -109,6 +112,9 @@ export async function advancedSearchJudgments(params: AdvancedSearchParams): Pro
   ensurePageLooksValid(searchHtml);
 
   const resultPath = extractResultListPath(searchHtml);
+  if (!resultPath) {
+    throw createJudgmentError('NOT_FOUND', 'no judgments found for the advanced search filters');
+  }
   const resultUrl = new URL(resultPath, BASE_URL);
   resultUrl.searchParams.set('sort', sort);
   resultUrl.searchParams.set('page', String(page));

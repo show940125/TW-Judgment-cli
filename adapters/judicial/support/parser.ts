@@ -38,6 +38,11 @@ function matchRequired(source: string, pattern: RegExp, field: string): string {
   return decodeHtml(match[1]).trim();
 }
 
+function matchOptional(source: string, pattern: RegExp): string | null {
+  const match = source.match(pattern);
+  return match?.[1] ? decodeHtml(match[1]).trim() : null;
+}
+
 function extractIdFromDetailUrl(detailUrl: string): string {
   const parsed = new URL(detailUrl);
   const id = parsed.searchParams.get('id');
@@ -49,6 +54,10 @@ function extractIdFromDetailUrl(detailUrl: string): string {
 
 function buildPdfUrlFromId(id: string): string {
   const parts = id.split(',');
+  if (parts.length === 5) {
+    const encodedId = parts.map((part) => encodePathPart(part)).join('%2c');
+    return `${BASE_URL}/EXPORTFILE/ExportToPdf.aspx?type=JD&id=${encodedId}`;
+  }
   if (parts.length < 6) {
     throw new Error('PARSE_ERROR: invalid judgment id');
   }
@@ -65,7 +74,10 @@ export function parseViewStatePayload(html: string): ViewStatePayload {
   };
 }
 
-export function extractResultListPath(html: string): string {
+export function extractResultListPath(html: string): string | null {
+  if (/ErrorPage\.aspx\?frm=iframe(?:&amp;|&)err=Q003/i.test(html)) {
+    return null;
+  }
   const href = matchRequired(html, /href="(qryresultlst\.aspx\?[^"]*q=[^"]+)"/i, 'result list href');
   return href.startsWith('/') ? href : `/FJUD/${href}`;
 }
@@ -78,9 +90,14 @@ export function parseResultListHtml(html: string, currentUrl: string): SearchPag
     const rank = Number(block[1]);
     const rowHtml = block[2];
     const summary = stripInlineTags(block[3]);
-    const href = matchRequired(rowHtml, /href="([^"]+)"/i, 'detail href');
-    const title = stripTags(matchRequired(rowHtml, />([\s\S]*?)<\/a>（\d+K）/i, 'row title'));
-    const sizeKb = Number(matchRequired(rowHtml, /<\/a>（(\d+)K）/i, 'size'));
+    const href = matchOptional(rowHtml, /href="([^"]+)"/i);
+    if (!href) {
+      continue;
+    }
+    const title = stripTags(matchRequired(rowHtml, /<a[^>]*>([\s\S]*?)<\/a>/i, 'row title'));
+    const sizeMatch = rowHtml.match(/<\/a>（(\d+)K）/i);
+    const sizeKb = sizeMatch?.[1] ? Number(sizeMatch[1]) : 0;
+    const scanOnly = /全文為掃描檔/.test(summary);
     const cells = [...rowHtml.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((cell) => stripTags(cell[1])).filter(Boolean);
     if (cells.length < 3) {
       throw new Error('PARSE_ERROR: incomplete result row');
@@ -95,6 +112,7 @@ export function parseResultListHtml(html: string, currentUrl: string): SearchPag
       date: cells[1],
       cause: cells[2],
       summary,
+      scanOnly,
       detailUrl,
       pdfUrl: buildPdfUrlFromId(id),
     });
@@ -119,20 +137,25 @@ export function parseResultListHtml(html: string, currentUrl: string): SearchPag
 }
 
 export function parseDetailHtml(html: string, currentUrl: string): ReadResult {
+  const id = extractIdFromDetailUrl(currentUrl);
   const title = matchRequired(html, /<title>\s*([\s\S]*?)\s*<\/title>/i, 'detail title');
   const date = stripTags(matchRequired(html, /<div class="col-th">裁判日期：<\/div>\s*<div class="col-td">\s*([\s\S]*?)<\/div>/i, 'detail date'));
   const cause = stripTags(matchRequired(html, /<div class="col-th">裁判案由：<\/div>\s*<div class="col-td">\s*([\s\S]*?)<\/div>/i, 'detail cause'));
-  const pdfUrl = absolutize(matchRequired(html, /id="hlExportPDF"[^>]*href="([^"]+)"/i, 'pdf href'));
-  const printUrl = absolutize(matchRequired(html, /id="hlPrint"[^>]*href="([^"]+)"/i, 'print href'));
-  const rawText = matchRequired(html, /<div class="htmlcontent">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/i, 'detail text');
+  const pdfHref = matchOptional(html, /id="hlExportPDF"[^>]*href="([^"]+)"/i);
+  const pdfUrl = pdfHref ? absolutize(pdfHref) : buildPdfUrlFromId(id);
+  const rawPrintUrl = matchOptional(html, /id="hlPrint"[^>]*href="([^"]+)"/i);
+  const rawText = matchOptional(html, /<div class="htmlcontent">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/i);
+  const text = rawText ? stripTags(rawText) : '';
 
   return {
-    id: extractIdFromDetailUrl(currentUrl),
+    id,
     title: stripTags(title),
     date,
     cause,
-    text: stripTags(rawText),
+    text,
+    hasTextLayer: Boolean(text),
+    scanOnly: !text && Boolean(pdfUrl),
     pdfUrl,
-    printUrl,
+    printUrl: rawPrintUrl ? absolutize(rawPrintUrl) : null,
   };
 }
