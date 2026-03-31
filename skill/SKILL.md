@@ -7,6 +7,15 @@ description: Use when searching Taiwan Judicial judgments with structured court 
 
 用這個 skill 時，先走 `opencli judicial ...`，不要自己重抓司法院網站。
 
+## 先講清楚
+
+- 一般法院裁判：優先用 `opencli judicial ...`
+- 憲法法庭判決與大法官解釋：不要硬塞進 `judicial`；直接用官方網站查字號更快
+  - 憲法判決字號：直接搜尋 `site:cons.judicial.gov.tw "<字號>"`
+  - 大法官解釋：直接搜尋 `site:cons.judicial.gov.tw "釋字第XXX號"`
+- 舊最高法院民事案號若只用案號搜尋容易混進刑事案，建議加法院與民事語境，例如：
+  - `opencli judicial advanced-search --courts "最高法院" --case-types civil --fulltext "103年度台上字第880號" --limit 5 -f json`
+
 ## 主要命令
 
 ```powershell
@@ -22,12 +31,15 @@ opencli judicial export-results --input "<json-path>" --export-format md -f json
 
 - 預設先 `search`，不要一開始就猜 `id`
 - 有法院 / 地區 / 審級 / 案號條件時，優先用 `advanced-search`
+- 但若是憲法法庭判決或釋字，改走官方憲法法庭網站，不用 `advanced-search`
 - 結果太多時，先列出候選，再請使用者縮小範圍或指定案件
 - 使用者若明確給案號或 `id`，直接 `read`
 - 需要一次讀多篇時走 `read-batch`
 - 需要 PDF 時走 `pdf`
 - 需要後續摘要、比較、整理或交付閱讀材料時，用 `export-results`
 - 不要重複抓站，先用 CLI 輸出當資料來源
+- `search / advanced-search` 現在會帶 `scan_only`
+- `read` 現在會帶 `has_text_layer` 與 `scan_only`
 
 ## 常見任務
 
@@ -35,6 +47,12 @@ opencli judicial export-results --input "<json-path>" --export-format md -f json
 
 1. `opencli judicial search --query "105訴123" --limit 5 -f json`
 2. 從結果挑最相關 `id`
+3. `opencli judicial read --id "<id>" -f json`
+
+若是舊最高法院案號，優先改成：
+
+1. `opencli judicial advanced-search --courts "最高法院" --case-types civil --fulltext "103年度台上字第880號" --limit 5 -f json`
+2. 選民事那筆 `id`
 3. `opencli judicial read --id "<id>" -f json`
 
 ### 搜尋某法律爭點並讀前 3 篇
@@ -63,4 +81,6 @@ opencli judicial export-results --input "<json-path>" --export-format md -f json
 - 若命令報 `UPSTREAM_MAINTENANCE`，告知使用者站方維護中
 - 若報 `UPSTREAM_CHANGED`，停止猜測，回報 parser 可能需更新
 - 若報 `INVALID_ARGUMENT`，先檢查法院 alias、日期格式、CSV 參數
+- 若舊最高法院裁判搜尋結果混入刑事案，先加 `--case-types civil`
+- 若題目是憲法法庭或釋字，直接改走官方憲法法庭網站
 - 若 `search` 結果過多，不直接亂選，先列候選
